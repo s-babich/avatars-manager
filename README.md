@@ -1,2 +1,1 @@
-# avatars-manager
-Gerrit avatars manager
+# Gerrit avatars manager
