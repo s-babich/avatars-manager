@@ -25,6 +25,8 @@ import com.google.gerrit.server.CurrentUser;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import java.io.IOException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 
 import com.googlesource.gerrit.plugins.avatars.manager.PutAvatar.Input;
 
@@ -53,7 +55,7 @@ public class PutAvatar implements RestModifyView<AccountResource, Input> {
 
   @Override
   public Response<String> apply(AccountResource rsrc, Input input)
-      throws AuthException {
+      throws AuthException, IOException, ConfigInvalidException {
 
     if (self.get().getAccountId() != rsrc.getUser().getAccountId()
         && !self.get().getCapabilities().canModifyAccount()) {

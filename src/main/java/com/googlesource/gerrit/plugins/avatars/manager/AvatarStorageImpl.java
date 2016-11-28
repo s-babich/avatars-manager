@@ -18,10 +18,22 @@ import com.google.gerrit.extensions.annotations.PluginData;
 import com.google.gerrit.server.IdentifiedUser;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import java.io.IOException;
 import java.nio.file.Path;
+import org.eclipse.jgit.errors.ConfigInvalidException;
+import org.eclipse.jgit.storage.file.FileBasedConfig;
+import org.eclipse.jgit.util.FS;
 
 @Singleton
 public class AvatarStorageImpl implements AvatarStorage {
+
+  public static final String SECTION   = "avatar";
+  public static final String URL       = "url";
+  public static final String COMMENTS  = "comments";
+  public static final String ACCOUNTID = "AccountId";
+  public static final String NAME      = "Name";
+  public static final String USERNAME  = "UserName";
+  public static final String EMAIL     = "Email";
 
   private final Path dataDir;
 
@@ -31,9 +43,25 @@ public class AvatarStorageImpl implements AvatarStorage {
   }
 
   @Override
-  public void saveUrl (IdentifiedUser forUser, String url, int imageSize) {
-    System.out.println(String.format(">>>   %s:saveUrl(%s, %s, %s)", this.getClass(), forUser, imageSize, url));
-    System.out.println(String.format(">>>      dataDir = %s", dataDir));
+  public void saveUrl (IdentifiedUser forUser, String url, int imageSize)
+      throws IOException, ConfigInvalidException {
+    FileBasedConfig cfg = getUserAvatarConfig(forUser);
+    cfg.setString(SECTION, null, URL, url);
+    cfg.save();
+  }
+
+  private FileBasedConfig getUserAvatarConfig(IdentifiedUser user)
+      throws IOException, ConfigInvalidException {
+    Path            file = dataDir.resolve(user.getAccountId() + ".config");
+    FileBasedConfig cfg  = new FileBasedConfig(file.toFile(), FS.DETECTED);
+    if (cfg.getFile().exists()) {
+      cfg.load();
+    }
+    cfg.setInt   (COMMENTS, null, ACCOUNTID, user.getAccountId().get());
+    cfg.setString(COMMENTS, null, NAME,      user.getName());
+    cfg.setString(COMMENTS, null, USERNAME,  user.getUserName());
+    cfg.setString(COMMENTS, null, EMAIL,     user.getNameEmail());
+    return cfg;
   }
 
 }

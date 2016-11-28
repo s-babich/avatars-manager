@@ -15,9 +15,12 @@
 package com.googlesource.gerrit.plugins.avatars.manager;
 
 import com.google.gerrit.server.IdentifiedUser;
+import java.io.IOException;
+import org.eclipse.jgit.errors.ConfigInvalidException;
 
 public interface AvatarStorage {
 
-  void saveUrl (IdentifiedUser forUser, String url, int imageSize);
+  void saveUrl (IdentifiedUser forUser, String url, int imageSize)
+      throws IOException, ConfigInvalidException;
 
 }
