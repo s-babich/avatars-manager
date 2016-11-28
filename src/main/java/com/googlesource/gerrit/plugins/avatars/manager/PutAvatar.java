@@ -14,10 +14,16 @@
 
 package com.googlesource.gerrit.plugins.avatars.manager;
 
+//import com.google.gerrit.common.data.GlobalCapability;
+//import com.google.gerrit.extensions.annotations.RequiresCapability;
+import com.google.gerrit.extensions.restapi.AuthException;
 import com.google.gerrit.extensions.restapi.DefaultInput;
 import com.google.gerrit.extensions.restapi.Response;
 import com.google.gerrit.extensions.restapi.RestModifyView;
 import com.google.gerrit.server.account.AccountResource;
+import com.google.gerrit.server.CurrentUser;
+import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import com.googlesource.gerrit.plugins.avatars.manager.PutAvatar.Input;
@@ -27,17 +33,36 @@ import com.googlesource.gerrit.plugins.avatars.manager.PutAvatar.Input;
 // --data '{"url":"https://avatar.site/avatar.gif"}' \
 // https://gerrit.agromat.ua:8443/a/accounts/1/avatar
 
+//@RequiresCapability(GlobalCapability.MODIFY_ACCOUNT)
 @Singleton
 public class PutAvatar implements RestModifyView<AccountResource, Input> {
 
-//static class Input {
   public class Input {
     @DefaultInput
     public String url;
   }
 
+  private final Provider<CurrentUser> self;
+  private final AvatarStorage         storage;
+
+  @Inject
+  PutAvatar(Provider<CurrentUser> self, AvatarStorage storage) {
+    this.self    = self;
+    this.storage = storage;
+  }
+
   @Override
-  public Response<String> apply(AccountResource rsrc, Input input) {
+  public Response<String> apply(AccountResource rsrc, Input input)
+      throws AuthException {
+
+    if (self.get().getAccountId() != rsrc.getUser().getAccountId()
+        && !self.get().getCapabilities().canModifyAccount()) {
+      throw new AuthException("You not allowed to change avatar for user Id: "
+        + rsrc.getUser().getAccountId());
+    }
+
+    storage.saveUrl(rsrc.getUser(), input.url, 0);
+
     return Response.ok(input.url);
   }
 

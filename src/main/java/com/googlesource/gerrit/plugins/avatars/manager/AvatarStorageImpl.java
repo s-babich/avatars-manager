@@ -14,19 +14,26 @@
 
 package com.googlesource.gerrit.plugins.avatars.manager;
 
-import com.google.gerrit.extensions.restapi.RestApiModule;
-import com.google.gerrit.server.account.AccountResource;
-import com.google.inject.AbstractModule;
+import com.google.gerrit.extensions.annotations.PluginData;
+import com.google.gerrit.server.IdentifiedUser;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
+import java.nio.file.Path;
 
-public class Module extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(AvatarStorage.class).to(AvatarStorageImpl.class);
-    install(new RestApiModule() {
-      @Override
-      protected void configure() {
-        put(AccountResource.ACCOUNT_KIND, "avatar").to(PutAvatar.class);
-      }
-    });
+@Singleton
+public class AvatarStorageImpl implements AvatarStorage {
+
+  private final Path dataDir;
+
+  @Inject
+  AvatarStorageImpl(@PluginData Path dataDir) {
+    this.dataDir = dataDir;
   }
+
+  @Override
+  public void saveUrl (IdentifiedUser forUser, String url, int imageSize) {
+    System.out.println(String.format(">>>   %s:saveUrl(%s, %s, %s)", this.getClass(), forUser, imageSize, url));
+    System.out.println(String.format(">>>      dataDir = %s", dataDir));
+  }
+
 }

@@ -14,19 +14,10 @@
 
 package com.googlesource.gerrit.plugins.avatars.manager;
 
-import com.google.gerrit.extensions.restapi.RestApiModule;
-import com.google.gerrit.server.account.AccountResource;
-import com.google.inject.AbstractModule;
+import com.google.gerrit.server.IdentifiedUser;
 
-public class Module extends AbstractModule {
-  @Override
-  protected void configure() {
-    bind(AvatarStorage.class).to(AvatarStorageImpl.class);
-    install(new RestApiModule() {
-      @Override
-      protected void configure() {
-        put(AccountResource.ACCOUNT_KIND, "avatar").to(PutAvatar.class);
-      }
-    });
-  }
+public interface AvatarStorage {
+
+  void saveUrl (IdentifiedUser forUser, String url, int imageSize);
+
 }
