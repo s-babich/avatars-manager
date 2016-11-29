@@ -14,7 +14,10 @@
 
 package com.googlesource.gerrit.plugins.avatars.manager;
 
+import com.google.gerrit.extensions.registration.DynamicSet;
 import com.google.gerrit.extensions.restapi.RestApiModule;
+import com.google.gerrit.extensions.webui.GwtPlugin;
+import com.google.gerrit.extensions.webui.WebUiPlugin;
 import com.google.gerrit.server.account.AccountResource;
 import com.google.gerrit.server.avatar.AvatarProvider;
 import com.google.inject.AbstractModule;
@@ -24,6 +27,8 @@ public class Module extends AbstractModule {
   protected void configure() {
     bind(AvatarStorage.class).to(AvatarStorageImpl.class);
     bind(AvatarProvider.class).to(AvatarProviderImpl.class);
+    DynamicSet.bind(binder(), WebUiPlugin.class)
+              .toInstance(new GwtPlugin("avatars_manager"));
     install(new RestApiModule() {
       @Override
       protected void configure() {
