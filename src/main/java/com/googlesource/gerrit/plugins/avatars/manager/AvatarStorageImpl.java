@@ -18,9 +18,7 @@ import com.google.gerrit.extensions.annotations.PluginData;
 import com.google.gerrit.server.IdentifiedUser;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.io.IOException;
 import java.nio.file.Path;
-import org.eclipse.jgit.errors.ConfigInvalidException;
 import org.eclipse.jgit.storage.file.FileBasedConfig;
 import org.eclipse.jgit.util.FS;
 
@@ -43,15 +41,22 @@ public class AvatarStorageImpl implements AvatarStorage {
   }
 
   @Override
-  public void saveUrl (IdentifiedUser forUser, String url, int imageSize)
-      throws IOException, ConfigInvalidException {
+  public String getUrl(IdentifiedUser forUser, int imageSize)
+      throws Exception {
+    FileBasedConfig cfg = getUserAvatarConfig(forUser);
+    return cfg.getString(SECTION, null, URL);
+  }
+
+  @Override
+  public void setUrl (IdentifiedUser forUser, String url, int imageSize)
+      throws Exception {
     FileBasedConfig cfg = getUserAvatarConfig(forUser);
     cfg.setString(SECTION, null, URL, url);
     cfg.save();
   }
 
   private FileBasedConfig getUserAvatarConfig(IdentifiedUser user)
-      throws IOException, ConfigInvalidException {
+      throws Exception {
     Path            file = dataDir.resolve(user.getAccountId() + ".config");
     FileBasedConfig cfg  = new FileBasedConfig(file.toFile(), FS.DETECTED);
     if (cfg.getFile().exists()) {

@@ -16,12 +16,14 @@ package com.googlesource.gerrit.plugins.avatars.manager;
 
 import com.google.gerrit.extensions.restapi.RestApiModule;
 import com.google.gerrit.server.account.AccountResource;
+import com.google.gerrit.server.avatar.AvatarProvider;
 import com.google.inject.AbstractModule;
 
 public class Module extends AbstractModule {
   @Override
   protected void configure() {
     bind(AvatarStorage.class).to(AvatarStorageImpl.class);
+    bind(AvatarProvider.class).to(AvatarProviderImpl.class);
     install(new RestApiModule() {
       @Override
       protected void configure() {

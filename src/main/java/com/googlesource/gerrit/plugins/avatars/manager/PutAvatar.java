@@ -25,10 +25,8 @@ import com.google.gerrit.server.CurrentUser;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
-import java.io.IOException;
-import org.eclipse.jgit.errors.ConfigInvalidException;
-
-import com.googlesource.gerrit.plugins.avatars.manager.PutAvatar.Input;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // curl -v -k -H "Content-Type: application/json" -X PUT \
 // --digest --user username:http_password \
@@ -37,7 +35,11 @@ import com.googlesource.gerrit.plugins.avatars.manager.PutAvatar.Input;
 
 //@RequiresCapability(GlobalCapability.MODIFY_ACCOUNT)
 @Singleton
-public class PutAvatar implements RestModifyView<AccountResource, Input> {
+public class PutAvatar
+    implements RestModifyView<AccountResource, PutAvatar.Input> {
+
+  private static final Logger log =
+      LoggerFactory.getLogger(PutAvatar.class);
 
   public class Input {
     @DefaultInput
@@ -55,7 +57,7 @@ public class PutAvatar implements RestModifyView<AccountResource, Input> {
 
   @Override
   public Response<String> apply(AccountResource rsrc, Input input)
-      throws AuthException, IOException, ConfigInvalidException {
+      throws AuthException {
 
     if (self.get().getAccountId() != rsrc.getUser().getAccountId()
         && !self.get().getCapabilities().canModifyAccount()) {
@@ -63,7 +65,12 @@ public class PutAvatar implements RestModifyView<AccountResource, Input> {
         + rsrc.getUser().getAccountId());
     }
 
-    storage.saveUrl(rsrc.getUser(), input.url, 0);
+    try {
+      storage.setUrl(rsrc.getUser(), input.url, 0);
+    } catch (Exception e) {
+      // ToDo: Error processing
+      log.error(String.format("!!!!!!!!!! %s", e), e);
+    }
 
     return Response.ok(input.url);
   }
